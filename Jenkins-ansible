@@ -38,28 +38,11 @@ pipeline{
                   version: '8.2.0'  
               }
             }
-        stage('Build Docker Image'){
+        stage("Execute Ansible"){
             steps{
-                 sh 'docker build -t deepikac2021/spring-boot-mongo .'
-             }
-         }
-        stage('Push Docker Image'){
-             steps{
-                  withCredentials([string(credentialsId: 'DOCKER_HUB_CREDENTIALS', variable: 'DOCKER_HUB_CREDENTIALS')]) {
-                      sh "docker login -u deepikac2021 -p ${DOCKER_HUB_CREDENTIALS}"
+                ansiblePlaybook credentialsId: 'private-key', disableHostKeyChecking: true, installation: 'ansible2', inventory: 'dev.in', playbook: 'copy.yml'
             }
-            sh 'docker push deepikac2021/spring-boot-mongo'
+           
         }
-      }
-        stage("Deploy To Kuberates Cluster"){
-              steps{
-                   kubernetesDeploy(
-                   configs: 'springBoot.yml', 
-                   kubeconfigId: 'KUBERNETES_CLUSTER_CONFIG',
-                   enableConfigSubstitution: true
-            )
-        }
-    }
-        
     }
 }
